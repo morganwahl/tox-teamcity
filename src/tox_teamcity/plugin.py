@@ -1,27 +1,31 @@
+"""
+Organizes test runs in each environment into separate "test suites".
+
+Tox plugin for use with TeamCity.
+"""
+
+
 import pluggy
-from tox.reporter import verbosity0
+from teamcity.messages import TeamcityServiceMessages
+from teamcity import is_running_under_teamcity
 
 hookimpl = pluggy.HookimplMarker("tox")
 
 
-@hookimpl
-def tox_addoption(parser):
-    """Add a command line option for later use"""
-    parser.add_argument("--magic", action="store", help="this is a magical option")
-    parser.add_testenv_attribute(
-        name="cinderella",
-        type="string",
-        default="not here",
-        help="an argument pulled from the tox.ini",
-    )
+_messages = TeamcityServiceMessages()
+
+
+def _testsuite_name(venv):
+    return venv.name
 
 
 @hookimpl
-def tox_configure(config):
-    """Access your option during configuration"""
-    verbosity0("flag magic is: {}".format(config.option.magic))
+def tox_runtest_pre(venv):
+    if is_running_under_teamcity():
+        _messages.testSuiteStarted(_testsuite_name(venv))
 
 
 @hookimpl
 def tox_runtest_post(venv):
-    verbosity0("cinderella is {}".format(venv.envconfig.cinderella))
+    if is_running_under_teamcity():
+        _messages.testSuiteFinished(_testsuite_name(venv))
