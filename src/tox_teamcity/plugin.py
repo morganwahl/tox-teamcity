@@ -6,8 +6,8 @@ Tox plugin for use with TeamCity.
 
 
 import pluggy
-from teamcity.messages import TeamcityServiceMessages
 from teamcity import is_running_under_teamcity
+from teamcity.messages import TeamcityServiceMessages
 
 hookimpl = pluggy.HookimplMarker("tox")
 
